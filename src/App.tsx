@@ -7,40 +7,88 @@ import InputLabel from "@mui/material/InputLabel";
 import MenuItem from "@mui/material/MenuItem";
 import FormControl from "@mui/material/FormControl";
 import Select, { SelectChangeEvent } from "@mui/material/Select";
+import { helperFormatMoneyToLocaleBR } from "./helpers/numberHelpers";
+import { formatMonth } from "./helpers/dataHelpers";
 
 function App() {
   const [despesas, setDespesas] = useState<despesa[]>([]);
-  const [year, setYear] = useState("2020");
-  const [month, setMonth] = useState("06");
+  const [selectedYear, setSelectedYear] = useState("");
+  const [selectedMonth, setSelectedMonth] = useState("");
+  const [years, setYears] = useState<string[]>([]);
+  const [months, setMonths] = useState<string[]>([]);
 
   useEffect(() => {
     async function fetchData() {
-      // const ano = "2021";
-      const mes = "06";
       const response = await getDespesasEndpoint(
-        `http://localhost:3001/despesas?mes=${year}-${month}`
+        `http://localhost:3001/despesas?\_sort=mes,dia`
       );
-      // `http://localhost:3001/despesas?mes=${year}-${mes}&_sort=mes,dia`
+      if (response?.statusText === "OK") {
+        const { data } = response;
+
+        const anos = data.map((item: despesa) => item.mes.split("-")[0]);
+        const uniqueAnos = anos.filter(
+          (item: string, index: number, self: string) =>
+            index === self.indexOf(item)
+        );
+
+        setYears(uniqueAnos);
+      }
+    }
+
+    fetchData();
+  }, []);
+
+  useEffect(() => {
+    async function fetchData() {
+      const response = await getDespesasEndpoint(
+        `http://localhost:3001/despesas?\_sort=mes,dia`
+      );
+      if (response?.statusText === "OK") {
+        const { data } = response;
+        const meses = data
+          .filter((item: despesa) => item.mes.includes(selectedYear))
+          .map((item: despesa) => item.mes.split("-")[1]);
+
+        const uniqueMeses = meses
+          .filter(
+            (item: string, index: number, self: string) =>
+              index === self.indexOf(item)
+          )
+          .sort((a: string, b: string) => a.localeCompare(b));
+
+        setMonths(uniqueMeses);
+      }
+    }
+
+    fetchData();
+  }, [selectedYear]);
+
+  useEffect(() => {
+    async function fetchData() {
+      const response = await getDespesasEndpoint(
+        `http://localhost:3001/despesas?mes=${selectedYear}-${selectedMonth}`
+      );
       if (response?.statusText === "OK") {
         const { data } = response;
         const newDespesas = data;
+
         setDespesas(newDespesas);
       }
     }
 
     fetchData();
-  }, [year, month]);
+  }, [selectedYear, selectedMonth]);
 
   function yearHandleChange(event: SelectChangeEvent) {
+    setSelectedMonth("");
     const newYear = event.target.value;
-    setYear(newYear);
+    setSelectedYear(newYear);
   }
 
   function monthHandleChange(event: SelectChangeEvent) {
     const newMonth = event.target.value;
-    setMonth(newMonth);
+    setSelectedMonth(newMonth);
   }
-  console.log(year);
 
   return (
     <>
@@ -49,45 +97,66 @@ function App() {
           minWidth: 120,
           marginTop: 8,
           display: "flex",
-          justifyContent: "start",
+          justifyContent: "space-between",
+          alignItems: "center",
           gap: 5,
-          paddingLeft: "5%",
+          paddingX: "5%",
         }}
       >
-        <FormControl sx={{ minWidth: 120 }}>
-          <InputLabel id="year">Ano</InputLabel>
-          <Select
-            labelId="year"
-            id="year"
-            value={year}
-            label="Ano"
-            onChange={yearHandleChange}
-          >
-            <MenuItem value={2020}>2020</MenuItem>
-            <MenuItem value={2021}>2021</MenuItem>
-          </Select>
-          {year}
-        </FormControl>
+        <Box>
+          <FormControl sx={{ minWidth: 120, marginRight: 5 }}>
+            <InputLabel id="year">Ano</InputLabel>
+            <Select
+              labelId="year"
+              id="year"
+              value={selectedYear}
+              label="Ano"
+              onChange={yearHandleChange}
+            >
+              {years.map((item) => (
+                <MenuItem value={item}>{item}</MenuItem>
+              ))}
+            </Select>
+          </FormControl>
 
-        <FormControl sx={{ minWidth: 120 }}>
-          <InputLabel id="month">Mês</InputLabel>
-          <Select
-            labelId="month"
-            id="month"
-            value={month}
-            label="Mes"
-            onChange={monthHandleChange}
-          >
-            <MenuItem value={"06"}>06</MenuItem>
-            <MenuItem value={"11"}>11</MenuItem>
-          </Select>
-          {month}
-        </FormControl>
+          <FormControl sx={{ minWidth: 120 }}>
+            <InputLabel id="month">Mês</InputLabel>
+            <Select
+              labelId="month"
+              id="month"
+              value={selectedMonth}
+              label="Mes"
+              onChange={monthHandleChange}
+              disabled={!selectedYear}
+            >
+              {months.map((item: string) => (
+                <MenuItem value={item}>{formatMonth(item)}</MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        </Box>
+        {selectedYear && selectedMonth && (
+          <span>
+            Despesa Total:{" "}
+            <strong>
+              {helperFormatMoneyToLocaleBR(totalDasDespesas(despesas))}
+            </strong>
+          </span>
+        )}
       </Box>
 
       <ListaDespesas despesas={despesas} />
     </>
   );
+}
+
+function totalDasDespesas(despesas: despesa[]) {
+  const total = despesas.reduce(
+    (prev: number, currentDespesa: despesa) => prev + currentDespesa.valor,
+    0
+  );
+
+  return total;
 }
 
 export default App;

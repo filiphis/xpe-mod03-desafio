@@ -62,18 +62,20 @@ function ListaDespesas({ despesas }: ListaDespesasProps) {
             </TableRow>
           </TableHead>
           <TableBody>
-            {despesas.map((despesa) => (
-              <TableRow
-                hover
-                key={despesa.id}
-                sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
-              >
-                <TableCell align="left">{despesa.descricao}</TableCell>
-                <TableCell align="left">{despesa.categoria}</TableCell>
-                <TableCell align="left">{despesa.dia}</TableCell>
-                <TableCell align="center">{despesa.valor}</TableCell>
-              </TableRow>
-            ))}
+            {despesas
+              .sort((a: despesa, b: despesa) => a.dia.localeCompare(b.dia))
+              .map((despesa) => (
+                <TableRow
+                  hover
+                  key={despesa.id}
+                  sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
+                >
+                  <TableCell align="left">{despesa.descricao}</TableCell>
+                  <TableCell align="left">{despesa.categoria}</TableCell>
+                  <TableCell align="left">{despesa.dia}</TableCell>
+                  <TableCell align="center">{despesa.valor}</TableCell>
+                </TableRow>
+              ))}
           </TableBody>
         </Table>
       </TableContainer>

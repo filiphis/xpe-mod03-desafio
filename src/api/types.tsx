@@ -3,6 +3,6 @@ export type despesa = {
   descricao: string;
   categoria: string;
   valor: number;
-  mes: Date;
+  mes: string;
   dia: string;
 };
