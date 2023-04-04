@@ -1,0 +1,42 @@
+// import { createContext, useEffect, useState } from "react";
+// import { getSessionStatus } from "../api/backend";
+
+// type AuthenticationContextType = {
+//   // login: () => void;
+//   // logout: () => void;
+//   // sessionStatus: () => void;
+//   hasSession: boolean;
+// };
+
+// type AuthenticationProviderProps = {
+//   children: React.ReactNode;
+// };
+
+// const AuthenticationContext = createContext({} as AuthenticationContextType);
+
+// export function AuthenticationProvider({
+//   children,
+// }: AuthenticationProviderProps) {
+//   const [hasSession, setHasSession] = useState(false);
+
+//   useEffect(() => {
+//     async function fetchData() {
+//       const sessionStatus = await getSessionStatus(
+//         "http://localhost:3001/sessao/usuario"
+//       );
+
+//       console.log("sessionStatus:", sessionStatus);
+//       // if (sessionStatus.status !== "401") {
+//       // }
+//       // setHasSession()
+//     }
+
+//     fetchData();
+//   }, []);
+
+//   return (
+//     <AuthenticationContext.Provider value={{ hasSession }}>
+//       {children}
+//     </AuthenticationContext.Provider>
+//   );
+// }

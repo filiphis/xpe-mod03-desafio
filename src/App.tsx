@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { despesa } from "./api/types";
-import { getDespesasEndpoint } from "./api/backend";
+import { getDespesasEndpoint, getSessionStatus } from "./api/backend";
 import { ListaDespesas } from "./components/ListaDespesas";
 import { Box } from "@mui/system";
 import InputLabel from "@mui/material/InputLabel";
@@ -9,6 +9,8 @@ import FormControl from "@mui/material/FormControl";
 import Select, { SelectChangeEvent } from "@mui/material/Select";
 import { helperFormatMoneyToLocaleBR } from "./helpers/numberHelpers";
 import { formatMonth } from "./helpers/dataHelpers";
+import axios from "axios";
+import { LoginForm } from "./components/LoginForm";
 
 function App() {
   const [despesas, setDespesas] = useState<despesa[]>([]);
@@ -16,11 +18,28 @@ function App() {
   const [selectedMonth, setSelectedMonth] = useState("");
   const [years, setYears] = useState<string[]>([]);
   const [months, setMonths] = useState<string[]>([]);
+  const [hasSession, setHasSession] = useState(false);
+
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        const response = await axios.get(
+          "http://localhost:3001/sessao/usuario"
+        );
+        setHasSession(true);
+      } catch (error) {
+        console.log("Usuario não está logado!");
+        setHasSession(false);
+      }
+    }
+
+    fetchData();
+  }, []);
 
   useEffect(() => {
     async function fetchData() {
       const response = await getDespesasEndpoint(
-        `http://localhost:3001/despesas?\_sort=mes,dia`
+        `http://localhost:3001/despesas?_sort=mes,dia`
       );
       if (response?.statusText === "OK") {
         const { data } = response;
@@ -41,7 +60,7 @@ function App() {
   useEffect(() => {
     async function fetchData() {
       const response = await getDespesasEndpoint(
-        `http://localhost:3001/despesas?\_sort=mes,dia`
+        `http://localhost:3001/despesas?_sort=mes,dia`
       );
       if (response?.statusText === "OK") {
         const { data } = response;
@@ -90,7 +109,7 @@ function App() {
     setSelectedMonth(newMonth);
   }
 
-  return (
+  const Page = (
     <>
       <Box
         sx={{
@@ -148,6 +167,12 @@ function App() {
       <ListaDespesas despesas={despesas} />
     </>
   );
+
+  if (hasSession) {
+    return Page;
+  } else {
+    return <LoginForm />;
+  }
 }
 
 function totalDasDespesas(despesas: despesa[]) {
