@@ -1,8 +1,12 @@
 import axios from "axios";
 
+export const api = axios.create({
+  withCredentials: true,
+});
+
 async function getDespesasEndpoint(url: string) {
   try {
-    const response = await axios.get(url);
+    const response = await api.get(url);
     return response;
   } catch (error) {
     console.error(error);
@@ -12,7 +16,7 @@ async function getDespesasEndpoint(url: string) {
 
 async function getSessionStatus(url: string) {
   try {
-    const response = await axios.get(url);
+    const response = await api.get(url);
     console.log("response", response);
     if (response) {
       console.log("TEM RESPONSE");

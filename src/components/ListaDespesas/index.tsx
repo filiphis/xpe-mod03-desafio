@@ -9,16 +9,6 @@ import Paper from "@mui/material/Paper";
 import { despesa } from "../../api/types";
 import { Box } from "@mui/system";
 
-function createData(
-  id: number,
-  descricao: string,
-  categoria: string,
-  dia: string,
-  valor: number
-) {
-  return { id, descricao, categoria, dia, valor };
-}
-
 // const rows = [
 //   createData(1, "Frozen yoghurt", "159", "6.0", 24),
 //   createData(2, "Ice cream sandwich", "237", "9.0", 37),

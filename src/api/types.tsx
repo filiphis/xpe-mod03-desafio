@@ -5,4 +5,5 @@ export type despesa = {
   valor: number;
   mes: string;
   dia: string;
+  teste: boolean;
 };

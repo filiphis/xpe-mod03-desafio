@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { despesa } from "./api/types";
-import { getDespesasEndpoint, getSessionStatus } from "./api/backend";
+import { api, getDespesasEndpoint } from "./api/backend";
 import { ListaDespesas } from "./components/ListaDespesas";
 import { Box } from "@mui/system";
 import InputLabel from "@mui/material/InputLabel";
@@ -9,7 +9,6 @@ import FormControl from "@mui/material/FormControl";
 import Select, { SelectChangeEvent } from "@mui/material/Select";
 import { helperFormatMoneyToLocaleBR } from "./helpers/numberHelpers";
 import { formatMonth } from "./helpers/dataHelpers";
-import axios from "axios";
 import { LoginForm } from "./components/LoginForm";
 
 function App() {
@@ -23,10 +22,11 @@ function App() {
   useEffect(() => {
     async function fetchData() {
       try {
-        const response = await axios.get(
-          "http://localhost:3001/sessao/usuario"
-        );
-        setHasSession(true);
+        const response = await api.get("http://localhost:3001/sessao/usuario");
+
+        if (response.statusText === "OK") {
+          setHasSession(true);
+        }
       } catch (error) {
         console.log("Usuario não está logado!");
         setHasSession(false);
@@ -35,6 +35,10 @@ function App() {
 
     fetchData();
   }, []);
+
+  // if (!hasSession) {
+  //   return;
+  // }
 
   useEffect(() => {
     async function fetchData() {
@@ -54,8 +58,10 @@ function App() {
       }
     }
 
-    fetchData();
-  }, []);
+    if (hasSession) {
+      fetchData();
+    }
+  }, [hasSession]);
 
   useEffect(() => {
     async function fetchData() {
@@ -79,8 +85,10 @@ function App() {
       }
     }
 
-    fetchData();
-  }, [selectedYear]);
+    if (hasSession) {
+      fetchData();
+    }
+  }, [selectedYear, hasSession]);
 
   useEffect(() => {
     async function fetchData() {
@@ -94,9 +102,10 @@ function App() {
         setDespesas(newDespesas);
       }
     }
-
-    fetchData();
-  }, [selectedYear, selectedMonth]);
+    if (hasSession) {
+      fetchData();
+    }
+  }, [selectedYear, selectedMonth, hasSession]);
 
   function yearHandleChange(event: SelectChangeEvent) {
     setSelectedMonth("");
@@ -123,6 +132,9 @@ function App() {
         }}
       >
         <Box>
+          <h1>Teste</h1>
+        </Box>
+        <Box>
           <FormControl sx={{ minWidth: 120, marginRight: 5 }}>
             <InputLabel id="year">Ano</InputLabel>
             <Select
@@ -133,7 +145,9 @@ function App() {
               onChange={yearHandleChange}
             >
               {years.map((item) => (
-                <MenuItem value={item}>{item}</MenuItem>
+                <MenuItem key={item} value={item}>
+                  {item}
+                </MenuItem>
               ))}
             </Select>
           </FormControl>
@@ -149,7 +163,9 @@ function App() {
               disabled={!selectedYear}
             >
               {months.map((item: string) => (
-                <MenuItem value={item}>{formatMonth(item)}</MenuItem>
+                <MenuItem key={item} value={item}>
+                  {formatMonth(item)}
+                </MenuItem>
               ))}
             </Select>
           </FormControl>

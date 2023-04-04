@@ -2,12 +2,48 @@ import Container from "@mui/material/Container";
 import Box from "@mui/material/Box";
 import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
-import { useState } from "react";
+import { FormEvent, useState } from "react";
+import { AxiosError } from "axios";
+import { api } from "../../api/backend";
+
+// type LoginFormProps = {
+//   onHasSession: () => {};
+// };
+
 function LoginForm() {
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
+  const [hasError, setHasError] = useState(false);
+
+  async function handleSubmitLoginForm(event: FormEvent) {
+    event.preventDefault();
+
+    const URL = "http://localhost:3001/sessao/criar";
+
+    const data = {
+      email,
+      senha,
+    };
+
+    const config = {
+      headers: {
+        "Content-Type": "application/json",
+      },
+      withCredentials: true,
+    };
+
+    try {
+      const response = await api.post(URL, data, config);
+
+      console.log("Login realizado com sucesso!", response.data);
+    } catch (error) {
+      const axiosErr = error as AxiosError;
+      // const status = axiosErr.response?.data;
+      console.error(axiosErr.response?.data);
+    }
+  }
   return (
-    <div>
+    <form onSubmit={handleSubmitLoginForm}>
       <Container
         sx={{
           height: "100vh",
@@ -35,7 +71,6 @@ function LoginForm() {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
           />
-          {email}
           <TextField
             label="Senha"
             variant="outlined"
@@ -44,7 +79,6 @@ function LoginForm() {
             value={senha}
             onChange={(e) => setSenha(e.target.value)}
           />
-          {senha}
 
           <Box sx={{ width: "100%", textAlign: "right" }}>
             <Button
@@ -54,13 +88,14 @@ function LoginForm() {
                 display: "inline-block",
               }}
               variant="contained"
+              type="submit"
             >
               Logar
             </Button>
           </Box>
         </Box>
       </Container>
-    </div>
+    </form>
   );
 }
 
