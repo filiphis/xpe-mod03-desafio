@@ -7,3 +7,8 @@ export type despesa = {
   dia: string;
   teste: boolean;
 };
+
+export type UserType = {
+  nome: string;
+  email: string;
+};

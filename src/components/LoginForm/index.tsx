@@ -5,15 +5,16 @@ import Button from "@mui/material/Button";
 import { FormEvent, useState } from "react";
 import { AxiosError } from "axios";
 import { api } from "../../api/backend";
+import { UserType } from "../../api/types";
 
-// type LoginFormProps = {
-//   onHasSession: () => {};
-// };
+type LoginFormProps = {
+  onLogIn: (user: UserType) => void;
+};
 
-function LoginForm() {
+function LoginForm({ onLogIn }: LoginFormProps) {
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
-  const [hasError, setHasError] = useState(false);
+  const [hasError, setHasError] = useState("");
 
   async function handleSubmitLoginForm(event: FormEvent) {
     event.preventDefault();
@@ -34,14 +35,23 @@ function LoginForm() {
 
     try {
       const response = await api.post(URL, data, config);
+      const user = response.data;
 
-      console.log("Login realizado com sucesso!", response.data);
+      onLogIn(user);
+      console.log("Login realizado com sucesso!");
     } catch (error) {
       const axiosErr = error as AxiosError;
-      // const status = axiosErr.response?.data;
       console.error(axiosErr.response?.data);
+      setHasError("Email ou senha estão incorretos!");
     }
   }
+
+  const errorStyle = {
+    backgroundColor: "rgba(233, 194, 190, 0.918)",
+    borderRadius: "4px",
+    padding: "16px",
+  };
+
   return (
     <form onSubmit={handleSubmitLoginForm}>
       <Container
@@ -65,6 +75,7 @@ function LoginForm() {
         >
           <h1>Digite seus dados para acessar </h1>
           <TextField
+            autoComplete="true"
             label="Email"
             variant="outlined"
             fullWidth
@@ -79,6 +90,8 @@ function LoginForm() {
             value={senha}
             onChange={(e) => setSenha(e.target.value)}
           />
+
+          {hasError && <Container sx={errorStyle}>{hasError}</Container>}
 
           <Box sx={{ width: "100%", textAlign: "right" }}>
             <Button

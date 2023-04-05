@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { despesa } from "./api/types";
+import { despesa, UserType } from "./api/types";
 import { api, getDespesasEndpoint } from "./api/backend";
 import { ListaDespesas } from "./components/ListaDespesas";
 import { Box } from "@mui/system";
@@ -10,6 +10,7 @@ import Select, { SelectChangeEvent } from "@mui/material/Select";
 import { helperFormatMoneyToLocaleBR } from "./helpers/numberHelpers";
 import { formatMonth } from "./helpers/dataHelpers";
 import { LoginForm } from "./components/LoginForm";
+import Button from "@mui/material/Button";
 
 function App() {
   const [despesas, setDespesas] = useState<despesa[]>([]);
@@ -17,7 +18,7 @@ function App() {
   const [selectedMonth, setSelectedMonth] = useState("");
   const [years, setYears] = useState<string[]>([]);
   const [months, setMonths] = useState<string[]>([]);
-  const [hasSession, setHasSession] = useState(false);
+  const [user, setUser] = useState<UserType | null>(null);
 
   useEffect(() => {
     async function fetchData() {
@@ -25,11 +26,11 @@ function App() {
         const response = await api.get("http://localhost:3001/sessao/usuario");
 
         if (response.statusText === "OK") {
-          setHasSession(true);
+          setUser(response.data);
         }
       } catch (error) {
         console.log("Usuario não está logado!");
-        setHasSession(false);
+        setUser(null);
       }
     }
 
@@ -58,10 +59,10 @@ function App() {
       }
     }
 
-    if (hasSession) {
+    if (user) {
       fetchData();
     }
-  }, [hasSession]);
+  }, [user]);
 
   useEffect(() => {
     async function fetchData() {
@@ -85,10 +86,10 @@ function App() {
       }
     }
 
-    if (hasSession) {
+    if (user) {
       fetchData();
     }
-  }, [selectedYear, hasSession]);
+  }, [selectedYear, user]);
 
   useEffect(() => {
     async function fetchData() {
@@ -102,10 +103,10 @@ function App() {
         setDespesas(newDespesas);
       }
     }
-    if (hasSession) {
+    if (user) {
       fetchData();
     }
-  }, [selectedYear, selectedMonth, hasSession]);
+  }, [selectedYear, selectedMonth, user]);
 
   function yearHandleChange(event: SelectChangeEvent) {
     setSelectedMonth("");
@@ -118,8 +119,35 @@ function App() {
     setSelectedMonth(newMonth);
   }
 
+  async function handleLogOut() {
+    try {
+      const response = await api.post("http://localhost:3001/sessao/finalizar");
+      console.log("Usuário deslogado!", response);
+      setUser(null);
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
   const Page = (
     <>
+      <Box
+        sx={{
+          marginTop: 8,
+          paddingX: "5%",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+        }}
+      >
+        <h1>Despesas</h1>
+        <Box sx={{ display: "flex", alignItems: "center", gap: "16px" }}>
+          <span>Olá {user?.nome}</span>
+          <Button variant="outlined" onClick={handleLogOut}>
+            Sair
+          </Button>
+        </Box>
+      </Box>
       <Box
         sx={{
           minWidth: 120,
@@ -131,9 +159,6 @@ function App() {
           paddingX: "5%",
         }}
       >
-        <Box>
-          <h1>Teste</h1>
-        </Box>
         <Box>
           <FormControl sx={{ minWidth: 120, marginRight: 5 }}>
             <InputLabel id="year">Ano</InputLabel>
@@ -184,10 +209,10 @@ function App() {
     </>
   );
 
-  if (hasSession) {
+  if (user) {
     return Page;
   } else {
-    return <LoginForm />;
+    return <LoginForm onLogIn={(user) => setUser(user)} />;
   }
 }
 
