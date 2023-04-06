@@ -1,7 +1,7 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { despesa, UserType } from "./api/types";
 import { api, getDespesasEndpoint } from "./api/backend";
-import { ListaDespesas } from "./components/ListaDespesas";
+import { ListaDespesasDetalhes } from "./components/ListaDespesasDetalhes";
 import { Box } from "@mui/system";
 import InputLabel from "@mui/material/InputLabel";
 import MenuItem from "@mui/material/MenuItem";
@@ -11,6 +11,43 @@ import { helperFormatMoneyToLocaleBR } from "./helpers/numberHelpers";
 import { formatMonth } from "./helpers/dataHelpers";
 import { LoginForm } from "./components/LoginForm";
 import Button from "@mui/material/Button";
+import { ListaDespesasResumo } from "./components/ListaDespesasResumo";
+import Tabs from "@mui/material/Tabs";
+import Tab from "@mui/material/Tab";
+import Typography from "@mui/material/Typography";
+
+interface TabPanelProps {
+  children?: React.ReactNode;
+  index: number;
+  tabValue: number;
+}
+
+function TabPanel(props: TabPanelProps) {
+  const { children, tabValue, index, ...other } = props;
+
+  return (
+    <div
+      role="tabpanel"
+      hidden={tabValue !== index}
+      id={`simple-tabpanel-${index}`}
+      aria-labelledby={`simple-tab-${index}`}
+      {...other}
+    >
+      {tabValue === index && (
+        <Box sx={{ p: 3 }}>
+          <Typography>{children}</Typography>
+        </Box>
+      )}
+    </div>
+  );
+}
+
+function a11yProps(index: number) {
+  return {
+    id: `simple-tab-${index}`,
+    "aria-controls": `simple-tabpanel-${index}`,
+  };
+}
 
 function App() {
   const [despesas, setDespesas] = useState<despesa[]>([]);
@@ -19,6 +56,12 @@ function App() {
   const [years, setYears] = useState<string[]>([]);
   const [months, setMonths] = useState<string[]>([]);
   const [user, setUser] = useState<UserType | null>(null);
+
+  const [tabValue, setTabValue] = React.useState(0);
+
+  const tabHandleChange = (event: React.SyntheticEvent, newValue: number) => {
+    setTabValue(newValue);
+  };
 
   useEffect(() => {
     async function fetchData() {
@@ -29,17 +72,12 @@ function App() {
           setUser(response.data);
         }
       } catch (error) {
-        console.log("Usuario não está logado!");
         setUser(null);
       }
     }
 
     fetchData();
   }, []);
-
-  // if (!hasSession) {
-  //   return;
-  // }
 
   useEffect(() => {
     async function fetchData() {
@@ -121,8 +159,7 @@ function App() {
 
   async function handleLogOut() {
     try {
-      const response = await api.post("http://localhost:3001/sessao/finalizar");
-      console.log("Usuário deslogado!", response);
+      await api.post("http://localhost:3001/sessao/finalizar");
       setUser(null);
     } catch (error) {
       console.error(error);
@@ -205,7 +242,25 @@ function App() {
         )}
       </Box>
 
-      <ListaDespesas despesas={despesas} />
+      <Box sx={{ minWidth: 650, maxWidth: "90%", margin: "0 auto" }}>
+        <Box sx={{ borderBottom: 1, borderColor: "divider" }}>
+          <Tabs
+            value={tabValue}
+            onChange={tabHandleChange}
+            aria-label="Tabs para selecionar as despesas"
+            centered
+          >
+            <Tab label="Resumo" {...a11yProps(0)} />
+            <Tab label="Detalhes" {...a11yProps(1)} />
+          </Tabs>
+        </Box>
+        <TabPanel tabValue={tabValue} index={0}>
+          <ListaDespesasResumo despesas={despesas} />
+        </TabPanel>
+        <TabPanel tabValue={tabValue} index={1}>
+          <ListaDespesasDetalhes despesas={despesas} />
+        </TabPanel>
+      </Box>
     </>
   );
 

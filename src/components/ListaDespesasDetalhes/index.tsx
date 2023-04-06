@@ -17,16 +17,15 @@ import { Box } from "@mui/system";
 //   createData(5, "Gingerbread", "356", "16.0", 49),
 // ];
 
-type ListaDespesasProps = {
+type ListaDespesasDetalhesProps = {
   despesas: despesa[];
 };
 
-console.log();
-function ListaDespesas({ despesas }: ListaDespesasProps) {
+function ListaDespesasDetalhes({ despesas }: ListaDespesasDetalhesProps) {
   return (
     <Box
       sx={{
-        minWidth: 650,
+        width: "100%",
         borderColor: "grey.900",
         display: "flex",
         justifyContent: "center",
@@ -38,10 +37,9 @@ function ListaDespesas({ despesas }: ListaDespesasProps) {
         component={Paper}
         sx={{
           minWidth: 650,
-          maxWidth: "90%",
+          width: "100%",
         }}
       >
-        {console.log("despesas", despesas)}
         <Table aria-label="simple table">
           <TableHead>
             <TableRow>
@@ -73,4 +71,4 @@ function ListaDespesas({ despesas }: ListaDespesasProps) {
   );
 }
 
-export { ListaDespesas };
+export { ListaDespesasDetalhes };

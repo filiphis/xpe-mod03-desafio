@@ -3,7 +3,7 @@ import Box from "@mui/material/Box";
 import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
 import { FormEvent, useState } from "react";
-import { AxiosError } from "axios";
+// import { AxiosError } from "axios";
 import { api } from "../../api/backend";
 import { UserType } from "../../api/types";
 
@@ -38,10 +38,8 @@ function LoginForm({ onLogIn }: LoginFormProps) {
       const user = response.data;
 
       onLogIn(user);
-      console.log("Login realizado com sucesso!");
     } catch (error) {
-      const axiosErr = error as AxiosError;
-      console.error(axiosErr.response?.data);
+      // const axiosErr = error as AxiosError;
       setHasError("Email ou senha estão incorretos!");
     }
   }
